@@ -1,0 +1,45 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+
+
+steps:
+- checkout: self
+
+
+
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: '1.5.7'
+
+- script: terraform version
+  displayName: 'Check Terraform Version'
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    backendServiceArm: 'demo-terraform'
+    backendAzureRmResourceGroupName: 'terraform-rg'
+    backendAzureRmStorageAccountName: 'neerajtest'
+    backendAzureRmContainerName: 'statefiles'
+    backendAzureRmKey: 'terraform.tfstate'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    environmentServiceNameAzureRM: 'demo-terraform'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    environmentServiceNameAzureRM: 'demo-terraform'
+    commandOptions: '-auto-approve'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    
